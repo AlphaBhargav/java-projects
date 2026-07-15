@@ -1,0 +1,154 @@
+import java.util.Scanner;
+
+public class BGK{
+
+    static Scanner bgk = new Scanner(System.in);
+
+    static class Student {
+        static String[] names = new String[100];
+        static int[] ids = new int[100];
+        static int[] marks = new int[100];
+    }
+      static String[] names = new String[100];
+        static int[] ids = new int[100];
+        static int[] marks = new int[100];
+
+    static int count = 0;
+
+    public static void main(String[] args) {
+
+        while (true) {
+
+            System.out.println("\n===== BGK STUDENT MANAGEMENT SYSTEM =====");
+            System.out.println("1. Add Student");
+            System.out.println("2. View Students");
+            System.out.println("3. Update Student");
+            System.out.println("4. Delete Student");
+            System.out.println("5. Exit");
+            System.out.print("Enter your choice: ");
+
+            int choice = bgk.nextInt();
+
+            switch (choice) {
+
+                case 1:
+                    AddStudent();
+                    break;
+
+                case 2:
+                    ViewStudents();
+                    break;
+
+                case 3:
+                    UpdateStudent();
+                    break;
+
+                case 4:
+                    DeleteStudent();
+                    break;
+
+                case 5:
+                    Exit();
+                    break;
+
+                default:
+                    System.out.println("Invalid Choice!");
+            }
+        }
+    }
+
+    static void AddStudent() {
+
+        bgk.nextLine();
+
+        System.out.print("Enter Student Name: ");
+        Student.names[count] = bgk.nextLine();
+
+        System.out.print("Enter Student ID: ");
+        Student.ids[count] = bgk.nextInt();
+
+        System.out.print("Enter Student Marks: ");
+        Student.marks[count] = bgk.nextInt();
+
+        count++;
+
+        System.out.println("Student Added Successfully!");
+    }
+
+    static void ViewStudents() {
+
+        if (count == 0) {
+            System.out.println("No Students Available.");
+            return;
+        }
+
+        System.out.println("\n----- Student List -----");
+
+        for (int i = 0; i < count; i++) {
+
+            System.out.println("Student " + (i + 1));
+            System.out.println("Name  : " + Student.names[i]);
+            System.out.println("ID    : " + Student.ids[i]);
+            System.out.println("Marks : " + Student.marks[i]);
+            System.out.println("----------------------");
+        }
+    }
+
+    static void UpdateStudent() {
+
+        System.out.print("Enter Student ID to Update: ");
+        int searchId = bgk.nextInt();
+
+        for (int i = 0; i < count; i++) {
+
+            if (Student.ids[i] == searchId) {
+
+                bgk.nextLine();
+
+                System.out.print("Enter New Name: ");
+                Student.names[i] = bgk.nextLine();
+
+                System.out.print("Enter New Marks: ");
+                Student.marks[i] = bgk.nextInt();
+
+                System.out.println("Student Updated Successfully!");
+                return;
+            }
+        }
+
+        System.out.println("Student Not Found.");
+    }
+
+    static void DeleteStudent() {
+
+        System.out.print("Enter Student ID to Delete: ");
+        int searchId = bgk.nextInt();
+
+        for (int i = 0; i < count; i++) {
+
+            if (Student.ids[i] == searchId) {
+
+                for (int j = i; j < count - 1; j++) {
+
+                    Student.names[j] = Student.names[j + 1];
+                    Student.ids[j] = Student.ids[j + 1];
+                    Student.marks[j] = Student.marks[j + 1];
+                }
+
+                count--;
+
+                System.out.println("Student Deleted Successfully!");
+                return;
+            }
+        }
+
+        System.out.println("Student Not Found.");
+    }
+
+    static void Exit() {
+
+        System.out.println("Thank you for using BGK Student Management System.");
+        bgk.close();
+        System.exit(0);
+    }
+}
