@@ -1,154 +1,218 @@
-import java.util.Scanner;
+import javax.swing.*;
+import java.awt.event.*;
+import java.io.*;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
-public class BGK{
+public class StudentManagement extends JFrame implements ActionListener {
 
-    static Scanner bgk = new Scanner(System.in);
+    JLabel l1, l2, l3;
+    JTextField t1, t2, t3;
+    JButton b1, b2, b3, b4, b5;
 
-    static class Student {
-        static String[] names = new String[100];
-        static int[] ids = new int[100];
-        static int[] marks = new int[100];
-    }
-      static String[] names = new String[100];
-        static int[] ids = new int[100];
-        static int[] marks = new int[100];
+    String logFileName = "student_operations.log";
+    String dataFileName = "students_data.txt";
+    Map<String, String[]> students = new LinkedHashMap<>();
 
-    static int count = 0;
+    StudentManagement() {
+        initializeStorage();
+        logAction("Application started");
 
-    public static void main(String[] args) {
-
-        while (true) {
-
-            System.out.println("\n===== BGK STUDENT MANAGEMENT SYSTEM =====");
-            System.out.println("1. Add Student");
-            System.out.println("2. View Students");
-            System.out.println("3. Update Student");
-            System.out.println("4. Delete Student");
-            System.out.println("5. Exit");
-            System.out.print("Enter your choice: ");
-
-            int choice = bgk.nextInt();
-
-            switch (choice) {
-
-                case 1:
-                    AddStudent();
-                    break;
-
-                case 2:
-                    ViewStudents();
-                    break;
-
-                case 3:
-                    UpdateStudent();
-                    break;
-
-                case 4:
-                    DeleteStudent();
-                    break;
-
-                case 5:
-                    Exit();
-                    break;
-
-                default:
-                    System.out.println("Invalid Choice!");
-            }
-        }
-    }
-
-    static void AddStudent() {
-
-        bgk.nextLine();
-
-        System.out.print("Enter Student Name: ");
-        Student.names[count] = bgk.nextLine();
-
-        System.out.print("Enter Student ID: ");
-        Student.ids[count] = bgk.nextInt();
-
-        System.out.print("Enter Student Marks: ");
-        Student.marks[count] = bgk.nextInt();
-
-        count++;
-
-        System.out.println("Student Added Successfully!");
-    }
-
-    static void ViewStudents() {
-
-        if (count == 0) {
-            System.out.println("No Students Available.");
+        if (java.awt.GraphicsEnvironment.isHeadless()) {
+            logAction("Headless environment detected; UI not displayed.");
             return;
         }
 
-        System.out.println("\n----- Student List -----");
+        setTitle("Student Management System");
+        setLayout(null);
+        setSize(550, 300);
 
-        for (int i = 0; i < count; i++) {
+        l1 = new JLabel("Student ID");
+        l2 = new JLabel("Name");
+        l3 = new JLabel("Course");
 
-            System.out.println("Student " + (i + 1));
-            System.out.println("Name  : " + Student.names[i]);
-            System.out.println("ID    : " + Student.ids[i]);
-            System.out.println("Marks : " + Student.marks[i]);
-            System.out.println("----------------------");
-        }
+        t1 = new JTextField();
+        t2 = new JTextField();
+        t3 = new JTextField();
+
+        b1 = new JButton("Add");
+        b2 = new JButton("Search");
+        b3 = new JButton("Update");
+        b4 = new JButton("Delete");
+        b5 = new JButton("Clear");
+
+        l1.setBounds(30, 30, 100, 25);
+        t1.setBounds(130, 30, 150, 25);
+
+        l2.setBounds(30, 70, 100, 25);
+        t2.setBounds(130, 70, 150, 25);
+
+        l3.setBounds(30, 110, 100, 25);
+        t3.setBounds(130, 110, 150, 25);
+
+        b1.setBounds(20, 180, 80, 30);
+        b2.setBounds(110, 180, 90, 30);
+        b3.setBounds(210, 180, 90, 30);
+        b4.setBounds(310, 180, 90, 30);
+        b5.setBounds(410, 180, 90, 30);
+
+        add(l1);
+        add(t1);
+        add(l2);
+        add(t2);
+        add(l3);
+        add(t3);
+        add(b1);
+        add(b2);
+        add(b3);
+        add(b4);
+        add(b5);
+
+        b1.addActionListener(this);
+        b2.addActionListener(this);
+        b3.addActionListener(this);
+        b4.addActionListener(this);
+        b5.addActionListener(this);
+
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+        setVisible(true);
     }
 
-    static void UpdateStudent() {
-
-        System.out.print("Enter Student ID to Update: ");
-        int searchId = bgk.nextInt();
-
-        for (int i = 0; i < count; i++) {
-
-            if (Student.ids[i] == searchId) {
-
-                bgk.nextLine();
-
-                System.out.print("Enter New Name: ");
-                Student.names[i] = bgk.nextLine();
-
-                System.out.print("Enter New Marks: ");
-                Student.marks[i] = bgk.nextInt();
-
-                System.out.println("Student Updated Successfully!");
-                return;
-            }
-        }
-
-        System.out.println("Student Not Found.");
+    private void initializeStorage() {
+        loadStudentsFromFile();
     }
 
-    static void DeleteStudent() {
+    private void loadStudentsFromFile() {
+        File file = new File(dataFileName);
+        if (!file.exists()) {
+            return;
+        }
 
-        System.out.print("Enter Student ID to Delete: ");
-        int searchId = bgk.nextInt();
-
-        for (int i = 0; i < count; i++) {
-
-            if (Student.ids[i] == searchId) {
-
-                for (int j = i; j < count - 1; j++) {
-
-                    Student.names[j] = Student.names[j + 1];
-                    Student.ids[j] = Student.ids[j + 1];
-                    Student.marks[j] = Student.marks[j + 1];
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            String line;
+            boolean firstLine = true;
+            while ((line = reader.readLine()) != null) {
+                if (firstLine) {
+                    firstLine = false;
+                    continue;
                 }
+                if (line.trim().isEmpty()) {
+                    continue;
+                }
+                String[] parts = line.split(",", 3);
+                if (parts.length == 3) {
+                    students.put(parts[0], new String[]{parts[1], parts[2]});
+                }
+            }
+        } catch (IOException ex) {
+            logAction("Load data file failed: " + ex.getMessage());
+        }
+    }
 
-                count--;
+    private void saveStudentsToFile() {
+        try (PrintWriter out = new PrintWriter(new FileWriter(dataFileName, false))) {
+            out.println("id,name,course");
+            for (Map.Entry<String, String[]> entry : students.entrySet()) {
+                out.println(entry.getKey() + "," + entry.getValue()[0] + "," + entry.getValue()[1]);
+            }
+        } catch (IOException ex) {
+            logAction("Data file save failed: " + ex.getMessage());
+        }
+    }
 
-                System.out.println("Student Deleted Successfully!");
+    private void logAction(String message) {
+        String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+        try (PrintWriter out = new PrintWriter(new FileWriter(logFileName, true))) {
+            out.println(timestamp + " - " + message);
+        } catch (IOException ex) {
+            System.out.println("Log write failed: " + ex.getMessage());
+        }
+    }
+
+    private void clearFields() {
+        t1.setText("");
+        t2.setText("");
+        t3.setText("");
+    }
+
+    public void actionPerformed(ActionEvent e) {
+
+        if (e.getSource() == b1) {
+            String id = t1.getText().trim();
+            String name = t2.getText().trim();
+            String course = t3.getText().trim();
+
+            if (id.isEmpty() || name.isEmpty() || course.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Please fill all fields");
                 return;
+            }
+
+            students.put(id, new String[]{name, course});
+            saveStudentsToFile();
+            logAction("Student added successfully. ID: " + id);
+            JOptionPane.showMessageDialog(this, "Student Added Successfully");
+        }
+
+        if (e.getSource() == b2) {
+            String sid = JOptionPane.showInputDialog("Enter Student ID");
+            if (sid == null) {
+                return;
+            }
+
+            String[] data = students.get(sid.trim());
+            if (data != null) {
+                t1.setText(sid.trim());
+                t2.setText(data[0]);
+                t3.setText(data[1]);
+                logAction("Student found during search. ID: " + sid.trim());
+            } else {
+                clearFields();
+                logAction("Student not found during search. ID: " + sid.trim());
+                JOptionPane.showMessageDialog(this, "Student Not Found");
             }
         }
 
-        System.out.println("Student Not Found.");
+        if (e.getSource() == b3) {
+            String id = t1.getText().trim();
+            if (students.containsKey(id)) {
+                students.put(id, new String[]{t2.getText().trim(), t3.getText().trim()});
+                saveStudentsToFile();
+                logAction("Student updated successfully. ID: " + id);
+                JOptionPane.showMessageDialog(this, "Student Updated");
+            } else {
+                logAction("Update failed. Student not found. ID: " + id);
+                JOptionPane.showMessageDialog(this, "Student Not Found");
+            }
+        }
+
+        if (e.getSource() == b4) {
+            String sid = JOptionPane.showInputDialog("Enter Student ID");
+            if (sid == null) {
+                return;
+            }
+
+            String key = sid.trim();
+            if (students.remove(key) != null) {
+                clearFields();
+                saveStudentsToFile();
+                logAction("Student deleted successfully. ID: " + key);
+                JOptionPane.showMessageDialog(this, "Student Deleted");
+            } else {
+                logAction("Delete failed. Student not found. ID: " + key);
+                JOptionPane.showMessageDialog(this, "Student Not Found");
+            }
+        }
+
+        if (e.getSource() == b5) {
+            clearFields();
+            logAction("Input fields cleared");
+        }
     }
 
-    static void Exit() {
-
-        System.out.println("Thank you for using BGK Student Management System.");
-        bgk.close();
-        System.exit(0);
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(StudentManagement::new);
     }
 }
